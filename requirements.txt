@@ -1,0 +1,6 @@
+flask
+flask-cors
+deep-translator
+aksharamukha
+firebase-admin
+gunicorn
