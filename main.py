@@ -6,7 +6,7 @@ from aksharamukha import transliterate
 import firebase_admin
 from firebase_admin import auth as firebase_auth, credentials
 
-app = Flask(_name_)
+app = Flask(__name__)
 CORS(app)
 
 # --- Firebase Admin init ---
@@ -125,5 +125,5 @@ def translate_api():
         return jsonify({"error": str(e)}), 500
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     app.run(debug=True, port=5000)
