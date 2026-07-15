@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dr. G.A. Allana — Multi-Script Translator &amp; Digital Archive</title>
+<style>
+  :root {
+    --ink: #1c1a17;
+    --paper: #f6f1e7;
+    --paper-deep: #ece3d1;
+    --brass: #9c7a3c;
+    --brass-deep: #7a5f2e;
+    --line: #d8cbaa;
+    --error: #a13d3d;
+    --font-display: "Amiri", "Georgia", serif;
+    --font-body: "Noto Naskh Arabic", "Georgia", serif;
+    --font-ui: "Inter", "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+  }
+
+  header.masthead {
+    border-bottom: 2px solid var(--brass);
+    padding: 28px 24px 20px;
+    text-align: center;
+    background: var(--paper);
+  }
+
+  header.masthead h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    margin: 0 0 4px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+
+  header.masthead p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--brass-deep);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* --- Auth panel --- */
+  #auth-view {
+    max-width: 400px;
+    margin: 40px auto;
+    background: var(--paper-deep);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 32px;
+  }
+
+  #auth-view h2 {
+    font-family: var(--font-display);
+    margin-top: 0;
+    font-size: 1.4rem;
+  }
+
+  #auth-view label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--brass-deep);
+    margin: 16px 0 6px;
+  }
+
+  #auth-view input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper);
+    font-size: 1rem;
+    font-family: var(--font-ui);
+    color: var(--ink);
+  }
+
+  #auth-view input:focus {
+    outline: 2px solid var(--brass);
+    outline-offset: 1px;
+  }
+
+  .auth-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  button {
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    padding: 10px 18px;
+    border-radius: 3px;
+    border: 1px solid var(--brass);
+    background: var(--brass);
+    color: var(--paper);
+    cursor: pointer;
+  }
+
+  button.secondary {
+    background: transparent;
+    color: var(--brass-deep);
+  }
+
+  button:hover { background: var(--brass-deep); border-color: var(--brass-deep); }
+  button.secondary:hover { background: var(--paper); color: var(--ink); }
+
+  #auth-error {
+    color: var(--error);
+    font-size: 0.85rem;
+    margin-top: 12px;
+    min-height: 1.2em;
+  }
+
+  /* --- Translator view --- */
+  #translator-view { display: none; }
+
+  .user-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    color: var(--brass-deep);
+  }
+
+  .user-bar button { padding: 6px 14px; font-size: 0.8rem; }
+
+  textarea#source-text {
+    width: 100%;
+    min-height: 90px;
+    padding: 14px;
+    font-size: 1.1rem;
+    font-family: var(--font-body);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ink);
+    resize: vertical;
+  }
+
+  .translate-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+
+  #status-msg {
+    font-size: 0.85rem;
+    color: var(--brass-deep);
+    margin-top: 8px;
+    min-height: 1.2em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 14px 16px;
+    min-height: 90px;
+  }
+
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--brass-deep);
+    font-family: var(--font-ui);
+  }
+
+  .card .out-text {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--ink);
+    word-wrap: break-word;
+  }
+
+  .card[dir="rtl"] .out-text { direction: rtl; text-align: right; }
+
+  .card .out-text:empty::before {
+    content: "—";
+    color: #bbb;
+  }
+
+  .card.unavailable .out-text {
+    color: #b08a8a;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--brass-deep);
+    padding: 30px 20px;
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Dr. G.A. Allana Archive</h1>
+  <p>Multi-Script Translator &amp; Digital Legacy</p>
+</header>
+
+<main>
+
+  <!-- AUTH VIEW -->
+  <section id="auth-view">
+    <h2 id="auth-title">Sign in</h2>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" autocomplete="email" />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" autocomplete="current-password" />
+
+    <div class="auth-actions">
+      <button id="btn-signin">Sign in</button>
+      <button id="btn-signup" class="secondary">Create account</button>
+    </div>
+
+    <div id="auth-error"></div>
+  </section>
+
+  <!-- TRANSLATOR VIEW -->
+  <section id="translator-view">
+    <div class="user-bar">
+      <span id="user-email-label"></span>
+      <button id="btn-signout" class="secondary">Sign out</button>
+    </div>
+
+    <textarea id="source-text" placeholder="Type a sentence to translate…"></textarea>
+    <div class="translate-row">
+      <button id="btn-translate">Translate</button>
+    </div>
+    <div id="status-msg"></div>
+
+    <div class="grid">
+      <div class="card"><h3>English</h3><div class="out-text" id="out-en"></div></div>
+      <div class="card"><h3>Hindi</h3><div class="out-text" id="out-hi"></div></div>
+      <div class="card" dir="rtl"><h3>Sindhi (Arabic)</h3><div class="out-text" id="out-sd"></div></div>
+      <div class="card"><h3>Roman Sindhi</h3><div class="out-text" id="out-rsd"></div></div>
+      <div class="card" dir="rtl"><h3>Urdu</h3><div class="out-text" id="out-ur"></div></div>
+      <div class="card"><h3>Gujarati</h3><div class="out-text" id="out-gu"></div></div>
+      <div class="card"><h3>Khojki</h3><div class="out-text" id="out-kh"></div></div>
+      <div class="card" dir="rtl"><h3>Pashto</h3><div class="out-text" id="out-ps"></div></div>
+      <div class="card"><h3>Balochi</h3><div class="out-text" id="out-bal"></div></div>
+      <div class="card"><h3>Punjabi (Gurmukhi)</h3><div class="out-text" id="out-pag"></div></div>
+      <div class="card" dir="rtl"><h3>Punjabi (Shahmukhi)</h3><div class="out-text" id="out-pas"></div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>In memory of Dr. G.A. Allana — preserving language, script, and story.</footer>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  // --- Firebase config (safe to expose publicly) ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyAMMbQPrT3Q4h8_AsgbeSlaHU4Gr0Fqa58",
+    authDomain: "dr-allana-archive.firebaseapp.com",
+    projectId: "dr-allana-archive",
+    storageBucket: "dr-allana-archive.firebasestorage.app",
+    messagingSenderId: "213232837944",
+    appId: "1:213232837944:web:a9a4213aa840ad0cd10dcd"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // --- Backend URL (your live Render deployment) ---
+  const API_URL = "https://dr-ga-allana-archive.onrender.com/api/translate";
+
+  const authView = document.getElementById("auth-view");
+  const translatorView = document.getElementById("translator-view");
+  const authError = document.getElementById("auth-error");
+  const userEmailLabel = document.getElementById("user-email-label");
+  const statusMsg = document.getElementById("status-msg");
+
+  document.getElementById("btn-signin").addEventListener("click", async () => {
+    authError.textContent = "";
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      authError.textContent = friendlyAuthError(e);
+    }
+  });
+
+  document.getElementById("btn-signup").addEventListener("click", async () => {
+    authError.textContent = "";
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      authError.textContent = friendlyAuthError(e);
+    }
+  });
+
+  document.getElementById("btn-signout").addEventListener("click", () => {
+    signOut(auth);
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      authView.style.display = "none";
+      translatorView.style.display = "block";
+      userEmailLabel.textContent = "Signed in as " + user.email;
+    } else {
+      authView.style.display = "block";
+      translatorView.style.display = "none";
+    }
+  });
+
+  function friendlyAuthError(e) {
+    const code = e.code || "";
+    if (code.includes("email-already-in-use")) return "That email is already registered — try signing in instead.";
+    if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) return "Incorrect email or password.";
+    if (code.includes("weak-password")) return "Password should be at least 6 characters.";
+    if (code.includes("invalid-email")) return "Please enter a valid email address.";
+    return "Something went wrong. Please try again.";
+  }
+
+  // --- Translation ---
+  const fieldMap = {
+    English: "out-en",
+    Hindi: "out-hi",
+    Sindhi_Arabic: "out-sd",
+    Roman_Sindhi: "out-rsd",
+    Urdu: "out-ur",
+    Gujarati: "out-gu",
+    Khojki: "out-kh",
+    Pashto: "out-ps",
+    Balochi: "out-bal",
+    Punjabi_Gurmukhi: "out-pag",
+    Punjabi_Shahmukhi: "out-pas"
+  };
+
+  document.getElementById("btn-translate").addEventListener("click", async () => {
+    const text = document.getElementById("source-text").value.trim();
+    if (!text) {
+      statusMsg.textContent = "Type something to translate first.";
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      statusMsg.textContent = "Please sign in first.";
+      return;
+    }
+
+    statusMsg.textContent = "Translating… (the server may take up to a minute to wake up if idle)";
+    clearOutputs();
+
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + idToken
+        },
+        body: JSON.stringify({ text })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        statusMsg.textContent = data.error || "Translation failed. Please try again.";
+        return;
+      }
+
+      Object.entries(fieldMap).forEach(([key, elId]) => {
+        const el = document.getElementById(elId);
+        const value = data[key];
+        el.textContent = value || "";
+        el.parentElement.classList.toggle("unavailable", !value);
+        if (!value && data._errors && data._errors[key]) {
+          el.textContent = "Not available";
+        }
+      });
+
+      statusMsg.textContent = "";
+    } catch (e) {
+      statusMsg.textContent = "Could not reach the translation server. Please try again in a moment.";
+    }
+  });
+
+  function clearOutputs() {
+    Object.values(fieldMap).forEach((elId) => {
+      document.getElementById(elId).textContent = "";
+      document.getElementById(elId).parentElement.classList.remove("unavailable");
+    });
+  }
+</script>
+
+</body>
+</html>
